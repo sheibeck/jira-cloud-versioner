@@ -22,7 +22,10 @@ export default {
     format: 'esm',
     chunkFileNames: 'chunks/[name]-[hash].js',
   },
-  
+  onwarn: (warning, defaultHandler) => {
+    if (warning.code === 'THIS_IS_UNDEFINED') return;
+    defaultHandler(warning)
+  },
   // watch: { clearScreen: false }, // for dev debug
   plugins: [
     alias({
@@ -54,7 +57,8 @@ export default {
       "process.env.VUE_APP_FIREBASE_STORAGEBUCKET": JSON.stringify(process.env.VUE_APP_FIREBASE_STORAGEBUCKET),
       "process.env.VUE_APP_FIREBASE_MESSAGINGSENDERID": JSON.stringify(process.env.VUE_APP_FIREBASE_MESSAGINGSENDERID),
       "process.env.VUE_APP_FIREBASE_APPID": JSON.stringify(process.env.VUE_APP_FIREBASE_APPID),
-      "process.env.VUE_APP_MEASUREMENTID": JSON.stringify(process.env.VUE_APP_MEASUREMENTID)
+      "process.env.VUE_APP_MEASUREMENTID": JSON.stringify(process.env.VUE_APP_MEASUREMENTID),
+      preventAssignment: true
     }),
     typescript(),
     postcss(),
