@@ -8,7 +8,6 @@ import { emptyDir } from 'rollup-plugin-empty-dir';
 import typescript from 'rollup-plugin-typescript2'; // '@rollup/plugin-typescript'
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-//import css from 'rollup-plugin-css-only';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import alias from 'rollup-plugin-alias';
