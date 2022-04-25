@@ -10,11 +10,10 @@ Support
 - [x] Firebase Authentication
 
 
-
 # Quick Start 
 
 ## Install
-```bash
+```
 git clone https://github.com/munron/mv3-vue-chrome-extension-template.git
 cd mv3-vue-chrome-extension-template
 npm install
@@ -22,15 +21,17 @@ npm run build
 mv .env.sample .env
 ```
 
-## Fix extension id
+## Fix Extension ID
 
-- open [chrome://extension](chrome://extension)
-- click `Pack Extension`
-- click `Browse` and select `dist` folder.
+#### Open `chrome://extension`
+#### Click Pack Extension
+#### Click `Browse` and select `dist` folder
 `dist.crx` and `dist.pem` are generated.
+  
 ![](https://gyazo.com/20b05012fc8d0bb3c4a82d016de08e3a/max_size/1000)
 
-- Edit `.env`, copy private key from `dist.pem` and paste to `VUE_APP_MV3_KEY` 
+#### Edit `.env`
+Copy private key from `dist.pem` and paste to `VUE_APP_MV3_KEY` 
 
 ```txt:.env
 VUE_APP_FIREBASE_APIKEY=XXXXXXXX
@@ -49,13 +50,12 @@ VUE_APP_MV3_KEY="-----BEGIN PRIVATE KEY-----
 \n-----END PRIVATE KEY-----"
 ```
 
-
 ## Setup Firebase
 
-- Create New Project
+#### Create New Project
 [https://console.firebase.google.com](https://console.firebase.google.com)
 
-- Copy the firebase configuration to `.env`
+#### Copy Firebase Configuration to `.env`
 
 ```js
 const firebaseConfig = {
@@ -69,29 +69,27 @@ const firebaseConfig = {
 };
 ```
 
-- Add Google to Sign-in provider in
+#### Add Google to Sign-in provider in
 ![](https://gyazo.com/f5d3251d81f756b7dee16889d5f0b742/max_size/1000) 
 
-- Add `chrome-extension://{Chrome Extension ID}`
+#### Add `chrome-extension://{Chrome Extension ID}`
 ![](https://gyazo.com/a395f349088ab6663dadb32dabfd3efc/max_size/1000)
-
 
 ## Setup Google Cloud Platform
 
-- Open [https://console.cloud.google.com/](https://console.cloud.google.com/)
+#### Open [https://console.cloud.google.com/](https://console.cloud.google.com/)
 
-- Open API&Service → Credential → +CREATE CREDENTIALS →　OAuth Client ID
+#### Open API&Service → Credential → +CREATE CREDENTIALS →　OAuth Client ID
 
-- Select Chrome App, fill Name and Application ID (Chrome Extension ID)
+#### Select Chrome App, fill Name and Application ID (Chrome Extension ID)
 ![](https://gyazo.com/aabef1b96183786de8b3bcaec2b0fea3/max_size/1000)
 
-- Edit `.env`. 
-Copy the Your Client Id to `VUE_APP_OAUTH2_CLIENT_ID` 
+#### Edit `.env`.
+Copy Your Client Id to `VUE_APP_OAUTH2_CLIENT_ID` 
 ![](https://gyazo.com/2f2c830cd7d38aafe4b9887c7d338a13/max_size/1000)
 
-
-- Edit `rollup.config.js`.
-uncomment the oauth2 settings.
+#### Edit `rollup.config.js`.
+Uncomment oauth2 settings.
 
 ```js
 chromeExtension({
@@ -113,4 +111,3 @@ chromeExtension({
 
 ## Hot reload
 `npm run dev`
-
