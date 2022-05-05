@@ -23,7 +23,7 @@ mv .env.sample .env
 
 ## Fix Extension ID
 
-#### Open `chrome://extension`
+#### Open `chrome://extensions`
 #### Click Pack Extension
 #### Click `Browse` and select `dist` folder
 `dist.crx` and `dist.pem` are generated.
