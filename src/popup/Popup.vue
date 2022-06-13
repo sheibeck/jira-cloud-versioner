@@ -1,99 +1,79 @@
 <template>
-  <div>
-    <p>popup sample</p> 
-    <div v-if="!authenticatedUser">
-      <button @click="loginUser" class="c-Button c-Button--close">login</button>
+  <div class="popupview">
+    <ChromeExImg :filename="'icon48.png'" />
+    <p>Firebase Login Sample</p> 
+    <div v-if="isAuthenticated" 
+      class="popupview__user"
+    >
+      <div class="popupview__user-icon">
+        <img :src="user?.profileImage" />
+      </div>
+      <div class="popupview__user-name">{{ user?.nickName }}</div>
+      <div class="popupview__user-email">{{ user?.email }}</div>
+      <button 
+        @click="authStore.logout" 
+        class="popupview__user-logout"
+      >Logout</button>
     </div>
-     <div v-else>
-      <button @click="loginoutUser" class="c-Button c-Button--close">logout</button>
-      <p>{{ this.email }}</p>
-      <p>{{ this.displayName }}</p>
-      <img :src="this.photoURL"/>
+    <div v-else>
+      <GoogleLoginButton 
+      :width="150" 
+      :height="32"
+      @click="authStore.login({ interactive : true})"
+    />
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { firebaseConfig } from './firebase_config'
-import { initializeApp } from 'firebase/app'
-import {
-    getAuth,
-    signOut,
-    onAuthStateChanged,　
-    signInWithCredential,
-    GoogleAuthProvider,
-    setPersistence,
-    browserLocalPersistence,
-    Auth
-} from 'firebase/auth';
+<script setup lang="ts">
+import ChromeExImg from "../components/ChromeExImg.vue";
+import GoogleLoginButton from "../components/GoogleLoginButton.vue";
 
-export default defineComponent({
-  name: 'Popup',
-  data() {
-    return { 
-      authenticatedUser: false,
-      auth:  {} as Auth,
-      email: '',
-      displayName: '',
-      photoURL: ''
-    }
-  },
-  setup() {
-    return {}
-  },
-  mounted(){
-    const firebaseApp = initializeApp(firebaseConfig)
-    this.auth = getAuth(firebaseApp)
-    onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        console.log('login')
-        this.authenticatedUser = true
-        this.email = user.email ?? ''
-        this.displayName = user.displayName ?? ''
-        this.photoURL = user.photoURL ?? ''
-      } else {
-        console.log('logout')
-        this.authenticatedUser = false;
-      }
-    });     
-  },
-  methods: {
-    loginUser() {
-      // ChromeアプリからGoogleログインしてトークン取得
-      chrome.identity.getAuthToken(
-        {interactive: true},
-        (token: string) => {
-          console.log('token', token)
-          // Googleログイン成功時に受け取るトークンを使ってGoogleのクレデンシャル作成
-          const credential = GoogleAuthProvider.credential(null, token)
-          console.log('credential:', credential)
-          console.log('auth:', this.auth)
+import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useAuthStore } from "../store/auth";
 
-          // Googleユーザーのクレデンシャルを使ってサインイン
-          signInWithCredential(this.auth, credential).then((result) => {
-            console.log("Sign In Success", result)
-          }).catch((error) => {
-            console.log("Sign In Error", error)
-          })
-        }
-      )
-    },
-    loginoutUser(){
-      this.auth.signOut()
-    }
-  },
-})
+const authStore = useAuthStore();
+const { user, isAuthenticated } = storeToRefs(authStore);
 
+onMounted(() => { authStore.login({ interactive: false })});
 </script>
 
 <style scoped>
-.c-Button {
-  border: none;
-  border-radius: 2px;
+.popupview {
+  padding: 5px;
+  background-color: white;
+  font-size: 16px;
+  color: black;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
-.c-Button--close {
-  background-color: yellow;
+.popupview__user-icon img {
+  width: 40px;
+  border-radius: 20px;
+}
+
+.popupview__user {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.popupview__user-logout {
+  padding: 3px 12px;
+  border-radius: 10px;
+  background-color: white;
+  border: 1px solid gray;
+  color: black;
+}
+
+.popupview__user-logout:hover {
+  background-color: lightgray;
 }
 </style>
