@@ -1,8 +1,10 @@
+
 # mv3-vue-chrome-extension-template
 ![demo](./demo.gif)
-modern chrome-extension development template
+chrome-extension development template with firebase 
 
 Support 
+- [x] Chrome Extension
 - [x] Manifest V3
 - [x] Vue3
 - [x] Typescript
