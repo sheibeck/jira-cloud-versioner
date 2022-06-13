@@ -1,6 +1,7 @@
 
 # mv3-vue-chrome-extension-template
 ![demo](./demo.gif)
+
 chrome-extension development template with firebase 
 
 Support 
