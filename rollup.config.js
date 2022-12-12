@@ -45,7 +45,7 @@ export default {
       }
     }),
     simpleReloader(), // Adds a Chrome extension reloader during watch mode
-    vuePlugin({target: 'browser'}),
+    vuePlugin({target: 'browser'}),    
     replace({
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
@@ -58,7 +58,7 @@ export default {
     json(),
     resolve(),
     commonjs(),
-    emptyDir(),
+    emptyDir(),  
     ],
 };
 
