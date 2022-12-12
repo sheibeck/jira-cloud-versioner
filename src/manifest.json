@@ -1,5 +1,5 @@
 {
-  "name": "MV3-VUE-CHROME-EXTENSION-TEMPLATE",
+  "name": "Jira Cloud Versioner",
   "version": "1.1",
   "manifest_version": 3,
   "action": {
@@ -21,18 +21,22 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
+      "matches": ["https://dealeron.atlassian.net/*"],
+      "all_frames": true,            
       "run_at": "document_start",
       "js": ["content-scripts/main.ts"]
     }
   ],
    "web_accessible_resources": [
     {
-      "resources": [ "assets/*.png" ],
-      "matches": [ "https://github.com/*" ]
+      "resources": [ "assets/*.png", "content-scripts/main.ts", "pinia-*.js" ],
+      "matches": [ "https://dealeron.atlassian.net/*" ]
     }
-  ],
+  ],  
   "permissions": [
-    "identity", "storage", "tabs"
+    "identity", "storage", "tabs", "unlimitedStorage", "scripting", "activeTab"
+  ],
+  "host_permissions": [
+    "https://dealeron.atlassian.net/" 
   ]
 }

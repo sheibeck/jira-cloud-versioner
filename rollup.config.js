@@ -19,7 +19,7 @@ export default {
   output: {
     dir: 'dist',
     format: 'esm',
-    chunkFileNames: 'chunks/[name]-[hash].js',
+    chunkFileNames: '[name]-[hash].js',
   },
   onwarn: (warning, defaultHandler) => {
     if (warning.code === 'THIS_IS_UNDEFINED') return;
@@ -50,12 +50,6 @@ export default {
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
       "process.env.NODE_ENV": JSON.stringify("production"),
-      "process.env.VUE_APP_FIREBASE_APIKEY":  JSON.stringify(process.env.VUE_APP_FIREBASE_APIKEY),
-      "process.env.VUE_APP_FIREBASE_AUTHDOMAIN": JSON.stringify(process.env.VUE_APP_FIREBASE_AUTHDOMAIN),
-      "process.env.VUE_APP_FIREBASE_PROJECTID": JSON.stringify(process.env.VUE_APP_FIREBASE_PROJECTID),
-      "process.env.VUE_APP_FIREBASE_STORAGEBUCKET": JSON.stringify(process.env.VUE_APP_FIREBASE_STORAGEBUCKET),
-      "process.env.VUE_APP_FIREBASE_MESSAGINGSENDERID": JSON.stringify(process.env.VUE_APP_FIREBASE_MESSAGINGSENDERID),
-      "process.env.VUE_APP_FIREBASE_APPID": JSON.stringify(process.env.VUE_APP_FIREBASE_APPID),
       "process.env.VUE_APP_MEASUREMENTID": JSON.stringify(process.env.VUE_APP_MEASUREMENTID),
       preventAssignment: true
     }),

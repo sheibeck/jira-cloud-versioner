@@ -7,7 +7,7 @@ window.onload = async () => {
   if (el) {
     el.insertAdjacentHTML(
       'afterend',
-      '<div id="app">hello</div>',
+      '<div id="app">HELLO MOM</div>',
     );
     const app = createApp(App).use(createPinia());
     app.mount('#app');
