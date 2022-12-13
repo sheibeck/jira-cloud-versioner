@@ -2,7 +2,8 @@
   <!-- Latest compiled and minified CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
     <div class="row">      
       <div class="col-8">
@@ -21,6 +22,7 @@
             {{codebase.Name}}
           </div>        
           <draggable 
+            @change="issueListChanged"
             v-model="codebase.Issues" 
             group="version"               
             item-key="Number">
@@ -65,9 +67,13 @@
         <div class="row">
           <div v-for="version in versions" v-bind:key="version.Number" class="mb-2">
             <div class="h4">
-              {{version.CodeBase}} {{version.Number}} <i class="fa-solid fa-trash" @click="removeVersion(version.Number)"></i>
+              {{version.CodeBase}} {{version.Number}} 
+              <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number)"></i>
+              <i class="fa-solid fa-clipboard pe-1" @click="copyVersionToClipboard(version.Number)"></i>
+              <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>
             </div>
             <draggable 
+              @change="versionListChanged"
               v-model="version.Issues" 
               group="version"               
               item-key="Number">
@@ -102,6 +108,7 @@ import { Version } from "./Version";
 import { Issue } from "./Issue";
 import { Database } from "./Database";
 import draggable from 'vuedraggable'
+import Toastify from 'toastify-js'
 
 let component = ref(new Component("C2C"));
 const newVersionNumber = ref();
@@ -145,26 +152,122 @@ const processSwimlanes = function() {
     const codeBase = component.value.CodeBases.find( cb => cb.Name == issue.CodeBase );
     codeBase?.AddIssue(issue);
   });
+
+  handleVersionedIssues();
+}
+
+const handleVersionedIssues = function() {  
+  component.value.CodeBases.forEach( (codebase) => {
+    const versionedIssues = new Array<string>();
+    codebase.Issues.forEach( (issue) => {      
+      const issueIsVersioned = versions.value.findIndex( v => {
+        const index = v.Issues.findIndex( i => i.Number === issue.Number);
+        return index > -1;
+      }) > -1;
+
+      if (issueIsVersioned) {
+        versionedIssues.push(issue.Number);
+      }
+    });    
+    codebase.Issues = codebase.Issues.filter( i => !versionedIssues.includes(i.Number) );
+  });
 }
 
 const addVersion = function() {  
-  debugger;
   const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
   versions.value.unshift(version);
 
   db.save(versions.value);
 }
 
-const removeVersion = function(versionNumber) {    
+const removeVersion = function(versionNumber) {
+  const verifyDelete = window.confirm("Are you sure you want to delete this version?");
+  if (verifyDelete) {
+    const v = versions.value.find( v => v.Number === versionNumber);
+    if (v) {
+      var index = versions.value.indexOf(v);
+      if (index > -1) {
+        versions.value.splice(index, 1);
+      }
+    }
+
+    db.save(versions.value);
+    processSwimlanes();
+  }  
+}
+
+const copyVersionToClipboard = function(versionNumber) {
   const v = versions.value.find( v => v.Number === versionNumber);
   if (v) {
-    var index = versions.value.indexOf(v);
-    if (index > -1) {
-      versions.value.splice(index, 1);
-    }
-  }
+    let output = `${v.CodeBase} ${v.Number}\r\n`;
+    v.Issues.forEach( (issue) => {
+      output += `* ${issue.Number}\r\n`;
+    });
+  
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(output);
 
-  db.save(versions.value);
+    sendMessage("version copied to clipboard");
+  }
+}
+
+const copyVersionForExcel = function(versionNumber) {
+  const v = versions.value.find( v => v.Number === versionNumber);
+  if (v) {
+    const hasSev = v.Issues.findIndex(i => i.IsSev) > -1;
+    let output = `v${v.Number}\t`;                  //A
+    output += `${v.Number}+?\t`;                    //B
+    output += `${"PI?"}\t`;                         //C
+    output += `\t`;                                 //D
+    output += `${getFormattedDate().toString()}\t`  //E
+    output += `Regular\t`                           // F
+    output += `${ hasSev ? "SEV" : ""}\t"`;         // G
+
+    //H
+    v.Issues.forEach( (issue) => {
+      output += `${issue.Number}\n`;
+    });
+
+    output += `"\t${hasSev ? "Yes" : "No"}`;        //I
+
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(output);
+
+    sendMessage("version copied to clipboard");
+  }
+}
+
+function getFormattedDate() {
+  const date = new Date();
+  var year = date.getFullYear();
+
+  var month = (1 + date.getMonth()).toString();
+  month = month.length > 1 ? month : '0' + month;
+
+  var day = date.getDate().toString();
+  day = day.length > 1 ? day : '0' + day;
+  
+  return month + '/' + day + '/' + year;
+}
+
+const sendMessage = function (message) {
+  Toastify({
+      text: message,
+      position: "right",
+      gravity: "bottom",
+      duration: 2000,
+      style: {
+        zIndex: 999999,
+      },
+    }).showToast();
+}
+
+function issueListChanged(added, removed, moved){
+  //alert("issue list changed");
+}
+
+function versionListChanged(added, removed, moved){  
+    db.save(versions.value);    
 }
 
 onMounted(() => {
@@ -177,6 +280,8 @@ onMounted(() => {
 </script>
 
 <style>
+
+
 #jcvApp { 
   position: absolute;
   left: 0;
