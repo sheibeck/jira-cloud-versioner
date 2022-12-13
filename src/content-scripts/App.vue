@@ -70,6 +70,11 @@ onMounted(() => {
     issues.forEach( (issue) => {   
       const ticketNumber = issue.getAttribute("data-issue-key");
       const extraFields = issue.querySelector(".ghx-extra-fields");
+      let isPBI = false;
+      
+      if (issue.closest(".ghx-swimlane")?.classList.contains("ghx-first")) {
+        isPBI = true;
+      }
 
       let codeBase = "";            
       const codeBaseRows = extraFields?.querySelectorAll(".ghx-row"); 
@@ -81,11 +86,16 @@ onMounted(() => {
         }
       }
       
-      let status = "";      
+      let status = "";
+      let isSEV = false;
       const statFields = issue.querySelector(".ghx-stat-fields");
       const statRows = statFields?.querySelectorAll(".ghx-row"); 
-      if (statRows) {
-        
+      if (statRows) {        
+        const priority = statRows[0].querySelectorAll(".ghx-field")[1];
+        if ((priority?.getAttribute("data-tooltip") ?? "").indexOf("Default") === -1) {
+          isSEV = true;
+        }
+
         const statusText = statRows[0].querySelector("[id^='gh-dev-info-icon']")?.querySelector("[aria-label]");
         if (statusText) {
           status = statusText.getAttribute("aria-label") ?? "";
@@ -93,7 +103,7 @@ onMounted(() => {
       }
           
       if (status && ticketNumber) {
-        const ticket = `${ticketNumber} (${status}, ${codeBase})`;//new JiraTicket(ticketNumber, status);
+        const ticket = `${ticketNumber} (${status}, ${codeBase}) ${isPBI ? "PBI" : ""} ${isSEV ? "SEV" : ""}`;//new JiraTicket(ticketNumber, status);
         tickets.value.push(ticket);
       }
     });
