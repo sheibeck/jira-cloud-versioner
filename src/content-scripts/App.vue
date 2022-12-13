@@ -34,7 +34,42 @@
       </div>
 
       <div class="col">
-        <div class="h3">Versions</div>        
+        <div class="row">
+          <div class="col h3">
+            Versions
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="new-version-number">#</span>
+              </div>
+              <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
+            </div>
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="new-version-number">Code</span>
+              </div>
+              <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
+            </div>
+            
+            <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>
+          </div>
+        </div>
+        <div class="row">
+          <div v-for="version in versions">
+            <div class="h4">
+              {{version.CodeBase}} {{version.Number}}
+            </div>
+            <li v-for="issue in version.Issues">
+              {{ issue.Number }}
+              <i v-if="issue.Status == TicketStatus.PullRequest" :title="issue.Status" class="fa-solid fa-code-pull-request p-1"></i>
+              <i v-if="issue.Status == TicketStatus.Merged" :title="issue.Status" class="fa-solid fa-code-merge p-1"></i>
+              <i v-if="issue.Status == TicketStatus.Unknown" :title="issue.Status" class="fa-solid fa-question p-1"></i>
+              <i v-if="issue.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
+              <i v-if="issue.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>
+            </li>            
+          </div>
+        </div>     
       </div>
     </div>
   </div>  
@@ -46,8 +81,14 @@ import { Component } from "./Component";
 import { CodeBase } from "./CodeBase";
 import { JiraTicket } from "./JiraTicket";
 import { TicketStatus } from "./TicketStatus";
+import { Version } from "./Version";
+import { version } from "os";
 
 let component = ref(new Component("C2C"));
+let versions = ref(new Array<Version>());
+const newVersionNumber = ref();
+const versionCodeBase = ref();
+
 let isVisible = ref(false);
 
 const toggleApp = function() {
@@ -140,6 +181,11 @@ const getTicketStatus = function(elem) : TicketStatus {
   } 
 
   return status;
+}
+
+const addVersion = function() {  
+  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
+  versions.value.unshift(version);
 }
 
 onMounted(() => {
