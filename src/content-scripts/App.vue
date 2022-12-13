@@ -19,15 +19,24 @@
         <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
           <div class="h4">
             {{codebase.Name}}
-          </div>
-          <li v-for="issue in codebase.Issues" v-bind:key="issue.Number">
-            {{ issue.Number }}
-            <i v-if="issue.Status == TicketStatus.PullRequest" :title="issue.Status" class="fa-solid fa-code-pull-request p-1"></i>
-            <i v-if="issue.Status == TicketStatus.Merged" :title="issue.Status" class="fa-solid fa-code-merge p-1"></i>
-            <i v-if="issue.Status == TicketStatus.Unknown" :title="issue.Status" class="fa-solid fa-question p-1"></i>
-            <i v-if="issue.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-            <i v-if="issue.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>
-          </li>
+          </div>        
+          <draggable 
+            v-model="codebase.Issues" 
+            group="version"               
+            item-key="Number">
+            <template #item="{element}">
+              <div> 
+                <div>
+                  {{ element.Number }}                          
+                  <i v-if="element.Status == TicketStatus.PullRequest" :title="element.Status" class="fa-solid fa-code-pull-request p-1"></i>
+                  <i v-if="element.Status == TicketStatus.Merged" :title="element.Status" class="fa-solid fa-code-merge p-1"></i>
+                  <i v-if="element.Status == TicketStatus.Unknown" :title="element.Status" class="fa-solid fa-question p-1"></i>
+                  <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
+                  <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                </div>
+              </div>
+            </template>
+          </draggable>
         </div>
       </div>
 
@@ -54,18 +63,28 @@
           </div>
         </div>
         <div class="row">
-          <div v-for="version in versions" v-bind:key="version.Number">
+          <div v-for="version in versions" v-bind:key="version.Number" class="mb-2">
             <div class="h4">
               {{version.CodeBase}} {{version.Number}} <i class="fa-solid fa-trash" @click="removeVersion(version.Number)"></i>
             </div>
-            <li v-for="issue in version.Issues" v-bind:key="issue.Number">
-              {{ issue.Number }}
-              <i v-if="issue.Status == TicketStatus.PullRequest" :title="issue.Status" class="fa-solid fa-code-pull-request p-1"></i>
-              <i v-if="issue.Status == TicketStatus.Merged" :title="issue.Status" class="fa-solid fa-code-merge p-1"></i>
-              <i v-if="issue.Status == TicketStatus.Unknown" :title="issue.Status" class="fa-solid fa-question p-1"></i>
-              <i v-if="issue.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-              <i v-if="issue.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>
-            </li>            
+            <draggable 
+              v-model="version.Issues" 
+              group="version"               
+              item-key="Number">
+              <template #item="{element}">
+                <div> 
+                  <div>
+                    {{ element.Number }}                          
+                    <i v-if="element.Status == TicketStatus.PullRequest" :title="element.Status" class="fa-solid fa-code-pull-request p-1"></i>
+                    <i v-if="element.Status == TicketStatus.Merged" :title="element.Status" class="fa-solid fa-code-merge p-1"></i>
+                    <i v-if="element.Status == TicketStatus.Unknown" :title="element.Status" class="fa-solid fa-question p-1"></i>
+                    <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
+                    <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                  </div>
+                </div>
+              </template>
+            </draggable>
+                   
           </div>
         </div>     
       </div>
@@ -82,6 +101,7 @@ import { TicketStatus } from "./TicketStatus";
 import { Version } from "./Version";
 import { Issue } from "./Issue";
 import { Database } from "./Database";
+import draggable from 'vuedraggable'
 
 let component = ref(new Component("C2C"));
 const newVersionNumber = ref();
@@ -115,10 +135,10 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
 
 const processSwimlanes = function() {
   component = ref(new Component("C2C"));
-  const issueList = Issue.GetIssues();
-
+  const issueList = Issue.GetIssues().sort(compareCodeBase);
+  
   //sort the issues list and then create the component/codebases  
-  issueList.sort(compareCodeBase).forEach( (issue) => {
+  issueList.forEach( (issue) => {
     if ( !component.value.CodeBases.find( cb => cb.Name == issue.CodeBase ) ) {
       component.value.AddCodeBase(new CodeBase(issue.CodeBase));
     }
@@ -128,6 +148,7 @@ const processSwimlanes = function() {
 }
 
 const addVersion = function() {  
+  debugger;
   const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
   versions.value.unshift(version);
 
@@ -183,5 +204,10 @@ onMounted(() => {
 
 .fa-code-merge {
   color: green;
+}
+
+.version-drop {
+  min-height: 100px;
+  border: solid 1px white;
 }
 </style>
