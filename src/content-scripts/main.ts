@@ -20,7 +20,7 @@ window.onload = async () => {
     createButton.insertAdjacentHTML(
       'afterend',
       `<div id="jcv-button">
-        <button type="button">V!</button>
+        <button type="button" class="btn btn-primary">Versions</button>
       </div>`,
     );
 

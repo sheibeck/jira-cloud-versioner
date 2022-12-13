@@ -5,14 +5,12 @@
 
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
     <div class="row">      
-      <div class="col-10">
+      <div class="col-8">
         <div class="h2">Jira Version Manager</div>
       </div>
-      <div class="col-1">
-        <button type="button" class="btn btn-secondary" @click="processSwimlanes()">Refresh</button>
-      </div>
-      <div class="col-1">
-        <button type="button" class="btn btn-secondary" @click="toggleApp()">Close</button>
+      <div class="col d-flex flex-row-reverse">
+        <button type="button" class="btn btn-secondary m-1" @click="toggleApp()">Close</button>
+        <button type="button" class="btn btn-secondary m-1" @click="processSwimlanes()">Refresh Issues</button>             
       </div>
     </div>
     
