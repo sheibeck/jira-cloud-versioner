@@ -65,19 +65,35 @@ onMounted(() => {
   const swimLanes = document.querySelectorAll(`[data-column-id="${integrationColumnId}"]`);
 
   swimLanes.forEach( (swimLane) => {
-    const statFields = swimLane?.querySelectorAll(".ghx-stat-fields") ?? []
+    const issues = swimLane?.querySelectorAll(".ghx-issue") ?? [];
 
-    statFields.forEach( (stat) => {   
-      const rows = stat.querySelectorAll(".ghx-row"); 
-      let status = "";
-      const statusText = rows[0].querySelector("[id^='gh-dev-info-icon']")?.querySelector("[aria-label]");
-      if (statusText) {
-        status = statusText.getAttribute("aria-label") ?? "";
+    issues.forEach( (issue) => {   
+      const ticketNumber = issue.getAttribute("data-issue-key");
+      const extraFields = issue.querySelector(".ghx-extra-fields");
+
+      let codeBase = "";            
+      const codeBaseRows = extraFields?.querySelectorAll(".ghx-row"); 
+      if (codeBaseRows) {        
+        const codeBaseText = codeBaseRows[1].querySelector(".ghx-extra-field");
+        if (codeBaseText) {
+          codeBase = codeBaseText.getAttribute("data-tooltip") ?? "";
+          codeBase = codeBase.replace("CodebaseKey: ", "");
+        }
       }
-      const ticketNumber = rows[1].querySelectorAll("a")[0].getAttribute("aria-label");
-    
+      
+      let status = "";      
+      const statFields = issue.querySelector(".ghx-stat-fields");
+      const statRows = statFields?.querySelectorAll(".ghx-row"); 
+      if (statRows) {
+        
+        const statusText = statRows[0].querySelector("[id^='gh-dev-info-icon']")?.querySelector("[aria-label]");
+        if (statusText) {
+          status = statusText.getAttribute("aria-label") ?? "";
+        }
+      }
+          
       if (status && ticketNumber) {
-        const ticket = `${ticketNumber} (${status})`;//new JiraTicket(ticketNumber, status);
+        const ticket = `${ticketNumber} (${status}, ${codeBase})`;//new JiraTicket(ticketNumber, status);
         tickets.value.push(ticket);
       }
     });
