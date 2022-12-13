@@ -18,12 +18,13 @@
     <div class="row">
       <div class="col">        
         <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
-          <div class="h4">
+          <div class="h4 border-bottom">
             {{codebase.Name}}
           </div>        
           <draggable 
             @change="issueListChanged"
             v-model="codebase.Issues" 
+            class="border version-drop"
             group="version"               
             item-key="Number">
             <template #item="{element}">
@@ -44,9 +45,11 @@
 
       <div class="col">
         <div class="row">
-          <div class="col h3">
-            Versions
+          <div class="col">
+            <span class="h3">Versions</span>
           </div>
+        </div>
+        <div class="row d-flex border-bottom pb-2 mb-2">
           <div class="col">
             <div class="input-group input-group-sm">
               <div class="input-group-prepend">
@@ -54,27 +57,39 @@
               </div>
               <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
             </div>
+          </div>
+          <div class="col-4">
             <div class="input-group input-group-sm">
               <div class="input-group-prepend">
                 <span class="input-group-text" id="new-version-number">Code</span>
               </div>
               <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
             </div>
-            
-            <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>
           </div>
-        </div>
+          <div class="col d-flex flex-row-reverse">
+            <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
+              @click="toggleReleasedVersions()">Released</button>
+            <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
+          </div>
+        </div>        
         <div class="row">
-          <div v-for="version in versions" v-bind:key="version.Number" class="mb-2">
+          <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
             <div class="h4">
-              {{version.CodeBase}} {{version.Number}} 
+              {{version.CodeBase}} {{version.Number}}
               <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number)"></i>
-              <i class="fa-solid fa-clipboard pe-1" @click="copyVersionToClipboard(version.Number)"></i>
-              <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>
+              <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number)"></i>
+              <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>              
+            </div>
+            <div class="col">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" v-model="version.Released">
+                <label class="form-check-label">Released</label>
+              </div>            
             </div>
             <draggable 
               @change="versionListChanged"
               v-model="version.Issues" 
+              class="border version-drop"
               group="version"               
               item-key="Number">
               <template #item="{element}">
@@ -117,6 +132,7 @@ const db = new Database("c2c");
 const versions = ref(db.fetch());
 
 let isVisible = ref(false);
+let showReleasedVersions = ref(true);
 
 const toggleApp = function() {
   isVisible.value = !isVisible.value;
@@ -173,6 +189,15 @@ const handleVersionedIssues = function() {
   });
 }
 
+const toggleReleasedVersions = function() {
+  showReleasedVersions.value = !showReleasedVersions.value;
+}
+
+const getVersionListByFilter = function() {  
+  const vs = versions.value.filter( v => v.Released === false || v.Released == null || v.Released == undefined || v.Released === showReleasedVersions.value );  
+  return vs;
+}
+
 const addVersion = function() {  
   const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
   versions.value.unshift(version);
@@ -196,18 +221,20 @@ const removeVersion = function(versionNumber) {
   }  
 }
 
-const copyVersionToClipboard = function(versionNumber) {
+const copyVersionForSlack = function(versionNumber) {
   const v = versions.value.find( v => v.Number === versionNumber);
   if (v) {
-    let output = `${v.CodeBase} ${v.Number}\r\n`;
+    let output = `@c2c-integrators\r\n`;
+    output += `${v.CodeBase} ${v.Number}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `* ${issue.Number}\r\n`;
+      output += `${issue.Number}${issue.IsSev ? " [SEV]" : ""}\r\n`;
     });
-  
+    output += `\r\n`;
+
     // Copy the text inside the text field
     navigator.clipboard.writeText(output);
 
-    sendMessage("version copied to clipboard");
+    sendMessage("copied for Slack");
   }
 }
 
@@ -233,7 +260,7 @@ const copyVersionForExcel = function(versionNumber) {
     // Copy the text inside the text field
     navigator.clipboard.writeText(output);
 
-    sendMessage("version copied to clipboard");
+    sendMessage("copied for Excel");
   }
 }
 
@@ -312,7 +339,6 @@ onMounted(() => {
 }
 
 .version-drop {
-  min-height: 100px;
-  border: solid 1px white;
+  min-height: 100px;  
 }
 </style>
