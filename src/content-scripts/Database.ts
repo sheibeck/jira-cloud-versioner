@@ -12,7 +12,7 @@ export class Database {
         window.localStorage.setItem(this.Name, json);
     }
 
-    fetch() : Array<Version> {
+    fetchAll() : Array<Version> {
         const versions = window.localStorage.getItem(this.Name);
         if (versions) {
             const json = JSON.parse(versions);

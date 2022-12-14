@@ -47,7 +47,7 @@
             {{codebase.Name}}
           </div>        
           <draggable 
-            @change="issueListChanged"
+            @change="issueListChanged"            
             v-model="codebase.Issues" 
             class="border version-drop"
             group="version"               
@@ -109,10 +109,10 @@
               <div class="form-check">
                 <input type="checkbox" class="form-check-input" v-model="version.Released">
                 <label class="form-check-label">Released</label>
-              </div>            
+              </div>
             </div>
             <draggable 
-              @change="versionListChanged"
+              @change="versionListChanged"              
               v-model="version.Issues" 
               class="border version-drop"
               group="version"               
@@ -141,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, customRef } from "vue";
 import { Component } from "./Component";
 import { CodeBase } from "./CodeBase";
 import { JiraTicket } from "./JiraTicket";
@@ -151,21 +151,20 @@ import { Issue } from "./Issue";
 import { Database } from "./Database";
 import draggable from 'vuedraggable'
 import Toastify from 'toastify-js'
-
 import GoogleLoginButton from "../components/GoogleLoginButton.vue";
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from "../store/auth";
+import { FireStoreDb } from "./FireStoreDb";
 
 const authStore = useAuthStore();
 const { user, isAuthenticated } = storeToRefs(authStore);
 
-
-
 let component = ref(new Component("C2C"));
 const newVersionNumber = ref();
 const versionCodeBase = ref();
+const fireStoreDb = new FireStoreDb();
 const db = new Database("c2c");
-const versions = ref(db.fetch());
+let versions = ref(new Array<Version>());
 
 let isVisible = ref(false);
 let showReleasedVersions = ref(true);
@@ -234,14 +233,15 @@ const getVersionListByFilter = function() {
   return vs;
 }
 
-const addVersion = function() {  
+const addVersion = function() {
   const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
   versions.value.unshift(version);
 
-  db.save(versions.value);
+  //db.save(versions.value);
+  fireStoreDb.save(versions.value);
 }
 
-const removeVersion = function(versionNumber) {
+const removeVersion = async(versionNumber) =>{
   const verifyDelete = window.confirm("Are you sure you want to delete this version?");
   if (verifyDelete) {
     const v = versions.value.find( v => v.Number === versionNumber);
@@ -250,9 +250,10 @@ const removeVersion = function(versionNumber) {
       if (index > -1) {
         versions.value.splice(index, 1);
       }
+  
+      //db.save(versions.value);
+      await fireStoreDb.delete(v);
     }
-
-    db.save(versions.value);
     processSwimlanes();
   }  
 }
@@ -329,12 +330,23 @@ function issueListChanged(added, removed, moved){
   //alert("issue list changed");
 }
 
-function versionListChanged(added, removed, moved){  
-    db.save(versions.value);    
+function versionListChanged(added, removed, moved){      
+    //db.save(versions.value);
+    fireStoreDb.save(versions.value);   
 }
 
-onMounted(() => {
+onMounted(async () => {
   authStore.login({ interactive: false });
+  
+  //try {    
+    const versionList = await fireStoreDb.fetchAll();
+    versions = ref(versionList);
+  //}
+  //catch(ex) 
+  //{
+  //  sendMessage(ex);
+  //  versions = ref(db.fetchAll());
+  //}
 
   document.addEventListener("openJcv", (event) => {
     toggleApp();
