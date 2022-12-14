@@ -4,12 +4,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   
-  <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">    
+  <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
     <div v-if="isAuthenticated">
       <div class="d-flex">
         <div class="d-flex flex-grow-1">
-          <div class="h2">Jira Version Manager</div> 
-          <button type="button" class="btn btn-sm btn-secondary m-1" @click="processSwimlanes()">Refresh Issues</button>         
+          <div class="h2">Jira Version Manager</div>           
+          <button type="button" class="btn btn-sm btn-secondary m-1" @click="fetchAllVersions()">Refresh</button>
         </div>
 
         <div class="d-flex mr-auto">
@@ -191,8 +191,7 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
 
 //scrape issues out of jira and add them to the list of 
 //tickets that are pending integration
-const processSwimlanes = function() {
-  component = ref(new Component("C2C"));
+const processSwimlanes = function() {  
   const issueList = Issue.GetIssues().sort(compareCodeBase);
   
   //sort the issues list and then create the component/codebases  
@@ -339,24 +338,34 @@ function versionListChanged(added, removed, moved){
     fireStoreDb.saveAll(versions.value);   
 }
 
+const fetchAllVersions = async() => {  
+  const versionList = await fireStoreDb.fetchAll();
+  versions = ref(versionList);
+  processSwimlanes();  
+}
+
+
+let unsubscribeVersions;
+
 onMounted(async () => {
   authStore.login({ interactive: false });
-  
-  //try {    
-    const versionList = await fireStoreDb.fetchAll();
-    versions = ref(versionList);
-  //}
-  //catch(ex) 
-  //{
-  //  sendMessage(ex);
-  //  versions = ref(db.fetchAll());
-  //}
-
-  document.addEventListener("openJcv", (event) => {
-    toggleApp();
+    
+  document.addEventListener("JcvVersionsUpdated", async (event) => {    
+    await fetchAllVersions();
   });
 
-  processSwimlanes(); 
+  document.addEventListener("openJcv", async(event) => {
+    toggleApp();
+    if (isVisible) {
+      unsubscribeVersions = await fireStoreDb.subscribeToUpdates();
+    }
+    else {
+      if (unsubscribeVersions != null) {
+        unsubscribeVersions();
+      }
+    }
+  });
+
 });
 </script>
 

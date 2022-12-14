@@ -1,6 +1,6 @@
 
 import { getFirestore, updateDoc } from "firebase/firestore";
-import { collection, addDoc, getDocs, deleteDoc, query, where, orderBy, limit} from "firebase/firestore"; 
+import { collection, addDoc, getDocs, deleteDoc, query, where, orderBy, limit, onSnapshot, doc} from "firebase/firestore"; 
 import { initializeApp } from 'firebase/app'
 import { firebaseConfig } from "../plugins/firebase_config";
 import { Version } from "./Version";
@@ -78,5 +78,14 @@ export class FireStoreDb {
         });
 
         return versions;
+    }
+
+    subscribeToUpdates = async() => {         
+        const docRef = collection(this.db, "versions");
+        const q = query(docRef, orderBy("Number", "desc"));
+            
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {            
+            document.dispatchEvent(new CustomEvent('JcvVersionsUpdated'));
+        });
     }
 }
