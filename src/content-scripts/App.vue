@@ -4,7 +4,32 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   
-  <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
+  <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">    
+    <div v-if="isAuthenticated" class="d-flex px-1">
+      <div class="px-1">
+        <img class="profile-img" :src="user?.profileImage" />
+      </div>
+      <div class="p-1">
+        <div class="contentsview__user-name">{{ user?.nickName }}</div>
+        <div class="contentsview__user-email">{{ user?.email }}</div>        
+      </div>
+      <div class="p-1">
+        <button
+          @click="authStore.logout"
+          class="btn btn-sm btn-secondary">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="m-2">
+      <GoogleLoginButton 
+        :width="150" 
+        :height="32"
+        @click="authStore.login({ interactive : true})"
+      />
+    </div>
+
     <div class="row">      
       <div class="col-8">
         <div class="h2">Jira Version Manager</div>
@@ -105,11 +130,13 @@
                 </div>
               </template>
             </draggable>
-                   
+                  
           </div>
         </div>     
       </div>
     </div>
+
+    
   </div>  
 </template>
 
@@ -124,6 +151,15 @@ import { Issue } from "./Issue";
 import { Database } from "./Database";
 import draggable from 'vuedraggable'
 import Toastify from 'toastify-js'
+
+import GoogleLoginButton from "../components/GoogleLoginButton.vue";
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from "../store/auth";
+
+const authStore = useAuthStore();
+const { user, isAuthenticated } = storeToRefs(authStore);
+
+
 
 let component = ref(new Component("C2C"));
 const newVersionNumber = ref();
@@ -298,6 +334,8 @@ function versionListChanged(added, removed, moved){
 }
 
 onMounted(() => {
+  authStore.login({ interactive: false });
+
   document.addEventListener("openJcv", (event) => {
     toggleApp();
   });
@@ -341,4 +379,15 @@ onMounted(() => {
 .version-drop {
   min-height: 100px;  
 }
+
+.contentsview { 
+  padding: 5px;
+  border-radius: 10px;  
+}
+
+.profile-img {
+  width: 40px;
+  border-radius: 20px;
+}
+
 </style>
