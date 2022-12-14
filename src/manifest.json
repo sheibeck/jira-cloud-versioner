@@ -34,9 +34,6 @@
     }
   ],  
   "permissions": [
-    "identity", "storage", "tabs", "unlimitedStorage", "scripting", "activeTab"
-  ],
-  "host_permissions": [
-    "https://dealeron.atlassian.net/" 
+    "identity", "storage", "tabs", "scripting"
   ]
 }
