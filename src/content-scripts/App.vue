@@ -55,10 +55,7 @@
             <template #item="{element}">
               <div> 
                 <div>
-                  {{ element.Number }}                          
-                  <i v-if="element.Status == TicketStatus.PullRequest" :title="element.Status" class="fa-solid fa-code-pull-request p-1"></i>
-                  <i v-if="element.Status == TicketStatus.Merged" :title="element.Status" class="fa-solid fa-code-merge p-1"></i>
-                  <i v-if="element.Status == TicketStatus.Unknown" :title="element.Status" class="fa-solid fa-question p-1"></i>
+                  {{ element.Number }}                  
                   <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                   <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
                 </div>
@@ -107,7 +104,7 @@
             </div>
             <div class="col">
               <div class="form-check">
-                <input type="checkbox" class="form-check-input" v-model="version.Released">
+                <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
                 <label class="form-check-label">Released</label>
               </div>
             </div>
@@ -120,10 +117,7 @@
               <template #item="{element}">
                 <div> 
                   <div>
-                    {{ element.Number }}                          
-                    <i v-if="element.Status == TicketStatus.PullRequest" :title="element.Status" class="fa-solid fa-code-pull-request p-1"></i>
-                    <i v-if="element.Status == TicketStatus.Merged" :title="element.Status" class="fa-solid fa-code-merge p-1"></i>
-                    <i v-if="element.Status == TicketStatus.Unknown" :title="element.Status" class="fa-solid fa-question p-1"></i>
+                    {{ element.Number }}                  
                     <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                     <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
                   </div>
@@ -145,7 +139,6 @@ import { onMounted, ref, customRef } from "vue";
 import { Component } from "./Component";
 import { CodeBase } from "./CodeBase";
 import { JiraTicket } from "./JiraTicket";
-import { TicketStatus } from "./TicketStatus";
 import { Version } from "./Version";
 import { Issue } from "./Issue";
 import { Database } from "./Database";
@@ -238,7 +231,7 @@ const addVersion = function() {
   versions.value.unshift(version);
 
   //db.save(versions.value);
-  fireStoreDb.save(versions.value);
+  fireStoreDb.save(version);
 }
 
 const removeVersion = async(versionNumber) =>{
@@ -330,9 +323,13 @@ function issueListChanged(added, removed, moved){
   //alert("issue list changed");
 }
 
+function updateVersion(version) {
+  fireStoreDb.save(version);
+}
+
 function versionListChanged(added, removed, moved){      
     //db.save(versions.value);
-    fireStoreDb.save(versions.value);   
+    fireStoreDb.saveAll(versions.value);   
 }
 
 onMounted(async () => {

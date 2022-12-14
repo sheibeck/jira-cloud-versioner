@@ -1,6 +1,6 @@
 
 import { getFirestore, updateDoc } from "firebase/firestore";
-import { collection, addDoc, getDocs, deleteDoc, query, where, getDoc} from "firebase/firestore"; 
+import { collection, addDoc, getDocs, deleteDoc, query, where, orderBy, limit} from "firebase/firestore"; 
 import { initializeApp } from 'firebase/app'
 import { firebaseConfig } from "../plugins/firebase_config";
 import { Version } from "./Version";
@@ -17,20 +17,24 @@ export class FireStoreDb {
         this.db = getFirestore(this.app);
     }
 
-    save = async (versions: Array<Version>) => {         
-        versions.forEach( async (version) => {
-            try {
+    save = async (version: Version) => {
+        try {
             const doc = await this.fetch(version.Number, version.CodeBase);
-                if (doc != null) {
-                    await updateDoc(doc, JSON.parse(JSON.stringify(version)));       
-                }
-                else {
-                    await addDoc(collection(this.db, "versions"), JSON.parse(JSON.stringify(version)));                
-                }
+            if (doc != null) {
+                await updateDoc(doc, JSON.parse(JSON.stringify(version)));       
             }
-            catch (e) {
-                console.error("Error saving document: ", e);
+            else {
+                await addDoc(collection(this.db, "versions"), JSON.parse(JSON.stringify(version)));                
             }
+        }
+        catch (e) {
+            console.error("Error saving document: ", e);
+        }       
+    }
+
+    saveAll = async (versions: Array<Version>) => {         
+        versions.forEach( async (version) => {
+            this.save(version);
         })               
     }
 
@@ -64,7 +68,11 @@ export class FireStoreDb {
 
     fetchAll = async() => {
         var versions = new Array<Version>();
-        const querySnapshot = await getDocs(collection(this.db, "versions"));
+
+        const docRef = collection(this.db, "versions");
+        const q = query(docRef, orderBy("Number", "desc"), limit(25));
+        const querySnapshot = await getDocs(q);
+
         querySnapshot.forEach((doc) => {
             versions.push(doc.data() as Version);
         });

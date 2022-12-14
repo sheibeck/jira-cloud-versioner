@@ -1,17 +1,14 @@
-import { TicketStatus } from "./TicketStatus";
 export class JiraTicket {
-    Number: string;
-    Status: TicketStatus;
+    Number: string;    
     CodeBase: string;
     IsPbi: boolean;
     IsSev: boolean;
 
-    constructor(number, status, codeBase, isPbi, isSev) {
-      this.Number = number;
-      this.Status = status;
+    constructor(number, codeBase, isPbi, isSev) {
+      this.Number = number;      
       this.CodeBase = codeBase;
       this.IsPbi = isPbi;
       this.IsSev = isSev;
     }
-  }
+}
   
