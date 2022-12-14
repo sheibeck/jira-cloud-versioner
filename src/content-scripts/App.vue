@@ -166,7 +166,7 @@ const db = new Database("c2c");
 let versions = ref(new Array<Version>());
 
 let isVisible = ref(false);
-let showReleasedVersions = ref(true);
+let showReleasedVersions = ref(false);
 
 const toggleApp = function() {
   isVisible.value = !isVisible.value;
