@@ -2,7 +2,8 @@ import { JiraTicket } from "./JiraTicket";
 
 export class Issue {
 
-    static GetIssues() : Array<JiraTicket> {                
+    static GetIssues() : Array<JiraTicket> {  
+        debugger;              
         const integrationColumnId = document.querySelector("[title='Integrating']")?.getAttribute("data-id");
         const swimLanes = document.querySelectorAll(`[data-column-id="${integrationColumnId}"]`);
         const issueList = new Array<JiraTicket>();

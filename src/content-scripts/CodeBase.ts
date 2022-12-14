@@ -9,7 +9,7 @@ export class CodeBase {
     }
 
     AddIssue(issue) {
-      if (!this.Issues.find( i => i.Number)) {
+      if (!this.Issues.find( i => i.Number == issue.Number)) {
         this.Issues.push(issue);
       }
     }
