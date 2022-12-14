@@ -5,112 +5,41 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">    
-    <div v-if="isAuthenticated" class="d-flex px-1">
-      <div class="px-1">
-        <img class="profile-img" :src="user?.profileImage" />
-      </div>
-      <div class="p-1">
-        <div class="contentsview__user-name">{{ user?.nickName }}</div>
-        <div class="contentsview__user-email">{{ user?.email }}</div>        
-      </div>
-      <div class="p-1">
-        <button
-          @click="authStore.logout"
-          class="btn btn-sm btn-secondary">
-          Logout
-        </button>
-      </div>
-    </div>
-
-    <div v-else class="m-2">
-      <GoogleLoginButton 
-        :width="150" 
-        :height="32"
-        @click="authStore.login({ interactive : true})"
-      />
-    </div>
-
-    <div class="row">      
-      <div class="col-8">
-        <div class="h2">Jira Version Manager</div>
-      </div>
-      <div class="col d-flex flex-row-reverse">
-        <button type="button" class="btn btn-secondary m-1" @click="toggleApp()">Close</button>
-        <button type="button" class="btn btn-secondary m-1" @click="processSwimlanes()">Refresh Issues</button>             
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="col">        
-        <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
-          <div class="h4 border-bottom">
-            {{codebase.Name}}
-          </div>        
-          <draggable 
-            @change="issueListChanged"            
-            v-model="codebase.Issues" 
-            class="border version-drop"
-            group="version"               
-            item-key="Number">
-            <template #item="{element}">
-              <div> 
-                <div>
-                  {{ element.Number }}                  
-                  <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                  <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
-                </div>
-              </div>
-            </template>
-          </draggable>
+    <div v-if="isAuthenticated">
+      <div class="d-flex">
+        <div class="d-flex flex-grow-1">
+          <div class="h2">Jira Version Manager</div> 
+          <button type="button" class="btn btn-sm btn-secondary m-1" @click="processSwimlanes()">Refresh Issues</button>         
         </div>
-      </div>
 
-      <div class="col">
-        <div class="row">
-          <div class="col">
-            <span class="h3">Versions</span>
+        <div class="d-flex mr-auto">
+          <div class="px-1">
+            <img class="profile-img" :src="user?.profileImage" />
           </div>
-        </div>
-        <div class="row d-flex border-bottom pb-2 mb-2">
-          <div class="col">
-            <div class="input-group input-group-sm">
-              <div class="input-group-prepend">
-                <span class="input-group-text" id="new-version-number">#</span>
-              </div>
-              <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
-            </div>
+          <div class="p-1">
+            <div class="contentsview__user-name">{{ user?.nickName }}</div>
+            <div class="contentsview__user-email">{{ user?.email }}</div>
           </div>
-          <div class="col-4">
-            <div class="input-group input-group-sm">
-              <div class="input-group-prepend">
-                <span class="input-group-text" id="new-version-number">Code</span>
-              </div>
-              <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
-            </div>
+          <div class="p-1 mr-4">
+            <button
+              @click="authStore.logout"
+              class="btn btn-sm btn-secondary">
+              Logout
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary m-1" @click="toggleApp()">Close</button>
           </div>
-          <div class="col d-flex flex-row-reverse">
-            <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
-              @click="toggleReleasedVersions()">Released</button>
-            <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
-          </div>
-        </div>        
-        <div class="row">
-          <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
-            <div class="h4">
-              {{version.CodeBase}} {{version.Number}}
-              <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number)"></i>
-              <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number)"></i>
-              <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>              
-            </div>
-            <div class="col">
-              <div class="form-check">
-                <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
-                <label class="form-check-label">Released</label>
-              </div>
-            </div>
+        </div>             
+      </div>
+      
+      <div class="row">
+        <div class="col">        
+          <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
+            <div class="h4 border-bottom">
+              {{codebase.Name}}
+            </div>        
             <draggable 
-              @change="versionListChanged"              
-              v-model="version.Issues" 
+              @change="issueListChanged"            
+              v-model="codebase.Issues" 
               class="border version-drop"
               group="version"               
               item-key="Number">
@@ -124,12 +53,88 @@
                 </div>
               </template>
             </draggable>
-                  
           </div>
-        </div>     
+        </div>
+
+        <div class="col">
+          <div class="row">
+            <div class="col">
+              <span class="h3">Versions</span>
+            </div>
+          </div>
+          <div class="row d-flex border-bottom pb-2 mb-2">
+            <div class="col">
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="new-version-number">#</span>
+                </div>
+                <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="new-version-number">Code</span>
+                </div>
+                <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
+              </div>
+            </div>
+            <div class="col d-flex flex-row-reverse">
+              <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
+                @click="toggleReleasedVersions()">Released</button>
+              <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
+            </div>
+          </div>        
+          <div class="row">
+            <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
+              <div class="h4">
+                {{version.CodeBase}} {{version.Number}}
+                <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number)"></i>
+                <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number)"></i>
+                <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>              
+              </div>
+              <div class="col">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
+                  <label class="form-check-label">Released</label>
+                </div>
+              </div>
+              <draggable 
+                @change="versionListChanged"              
+                v-model="version.Issues" 
+                class="border version-drop"
+                group="version"               
+                item-key="Number">
+                <template #item="{element}">
+                  <div> 
+                    <div>
+                      {{ element.Number }}                  
+                      <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
+                      <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                    </div>
+                  </div>
+                </template>
+              </draggable>
+                    
+            </div>
+          </div>     
+        </div>
       </div>
     </div>
 
+    <div v-else class="m-2">
+      <div class="d-flex">
+        <div class="flex-grow-1">          
+          <div class="h2">Jira Version Manager</div>          
+        </div>
+
+        <GoogleLoginButton 
+          :width="150" 
+          :height="32"
+          @click="authStore.login({ interactive : true})"
+        />
+      </div>
+    </div>
     
   </div>  
 </template>
@@ -184,6 +189,8 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
   return 0;
 }
 
+//scrape issues out of jira and add them to the list of 
+//tickets that are pending integration
 const processSwimlanes = function() {
   component = ref(new Component("C2C"));
   const issueList = Issue.GetIssues().sort(compareCodeBase);
