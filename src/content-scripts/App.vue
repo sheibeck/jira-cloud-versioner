@@ -6,6 +6,7 @@
   
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
     <div v-if="isAuthenticated">
+      <a href="https://dealeron.atlassian.net/jira/people/6150b95207ac3c0068966f97/boards/41?quickFilter=272&quickFilter=271&quickFilter=121">Use This Board!</a>
       <div class="d-flex">
         <div class="d-flex flex-grow-1">
           <div class="h2">Jira Version Manager</div>           
@@ -48,7 +49,7 @@
                   <div>
                     {{ element.Number }}                  
                     <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                    <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                    <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>                    
                   </div>
                 </div>
               </template>
@@ -110,7 +111,7 @@
                     <div>
                       {{ element.Number }}                  
                       <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                      <i v-if="element.IsSev" title="sev" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                      <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>                    
                     </div>
                   </div>
                 </template>
@@ -189,7 +190,7 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
   return 0;
 }
 
-//scrape issues out of jira and add them to the list of 
+//scrape issues out of jira and add them to the list of
 //tickets that are pending integration
 const processSwimlanes = function() {  
   const issueList = Issue.GetIssues().sort(compareCodeBase);
@@ -206,7 +207,7 @@ const processSwimlanes = function() {
   handleVersionedIssues();
 }
 
-const handleVersionedIssues = function() {  
+const handleVersionedIssues = function() { 
   component.value.CodeBases.forEach( (codebase) => {
     const versionedIssues = new Array<string>();
     codebase.Issues.forEach( (issue) => {      
@@ -232,11 +233,13 @@ const getVersionListByFilter = function() {
   return vs;
 }
 
-const addVersion = function() {
-  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);
-  versions.value.unshift(version);
-
-  //db.save(versions.value);
+const addVersion = function() {  
+  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);  
+  if (versions.value.findIndex( v => v.Number == version.Number && v.CodeBase == version.CodeBase) > -1) {
+    sendMessage("Version already exists for this Codebase");
+    return;
+  }
+  versions.value.unshift(version);  
   fireStoreDb.save(version);
 }
 
@@ -263,7 +266,7 @@ const copyVersionForSlack = function(versionNumber) {
     let output = `@c2c-integrators\r\n`;
     output += `${v.CodeBase} ${v.Number}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? " [SEV]" : ""}\r\n`;
+      output += `${issue.Number}${issue.IsSev ? ` ${issue.Priority}` : ""}\r\n`;
     });
     output += `\r\n`;
 
@@ -338,12 +341,11 @@ function versionListChanged(added, removed, moved){
     fireStoreDb.saveAll(versions.value);   
 }
 
-const fetchAllVersions = async() => {  
+const fetchAllVersions = async() => {    
   const versionList = await fireStoreDb.fetchAll();
   versions = ref(versionList);
-  processSwimlanes();  
+  processSwimlanes();
 }
-
 
 let unsubscribeVersions;
 
@@ -365,7 +367,6 @@ onMounted(async () => {
       }
     }
   });
-
 });
 </script>
 

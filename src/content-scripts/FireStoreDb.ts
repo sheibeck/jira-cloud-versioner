@@ -4,9 +4,6 @@ import { collection, addDoc, getDocs, deleteDoc, query, where, orderBy, limit, o
 import { initializeApp } from 'firebase/app'
 import { firebaseConfig } from "../plugins/firebase_config";
 import { Version } from "./Version";
-import { version } from "os";
-import { async } from "@firebase/util";
-import { remove } from "fs-extra";
 
 export class FireStoreDb {
     app;

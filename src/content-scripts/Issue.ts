@@ -30,17 +30,19 @@ export class Issue {
                 }
                                         
                 let isSev = false;
+                let priorityText = "Default";
                 const statFields = issue.querySelector(".ghx-stat-fields");
                 const statRows = statFields?.querySelectorAll(".ghx-row"); 
-                if (statRows) {        
+                if (statRows) {
                     const priority = statRows[0].querySelectorAll(".ghx-field")[1];
-                    if ((priority?.getAttribute("data-tooltip") ?? "").indexOf("Default") === -1) {
-                    isSev = true;
+                    priorityText = (priority?.getAttribute("data-tooltip") ?? "").replace(" priority", "");
+                    if (priorityText.indexOf("Default") === -1) {
+                        isSev = true;
                     }                
                 }
                     
                 if (ticketNumber) {        
-                    const ticket = new JiraTicket(ticketNumber, codeBase, isPbi, isSev)
+                    const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev)
                     issueList.push(ticket);
                 }
             });    
