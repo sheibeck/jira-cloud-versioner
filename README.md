@@ -1,4 +1,14 @@
-# mv3-vue-chrome-extension-template
+# Installation
+* Download the [extension .zip] (https://github.com/sheibeck/jira-cloud-versioner/raw/main/dist.zip)
+* Unpack this file then open `chrome://extensions/`
+* Choose `Load Unpacked Extension` and targe the directory you unpacked in step #1
+* Navigate to your jira cloud instance
+* Click the Version button that shows up next to the Seach Bar
+* Login with a google account
+* Version stuff
+
+# Development
+## built from `mv3-vue-chrome-extension-template`
 ![demo](./demo.gif)
 modern chrome-extension development template
 
